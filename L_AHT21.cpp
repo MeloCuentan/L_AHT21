@@ -30,13 +30,21 @@ bool L_AHT21::begin()
  * @param cmd3 Comando 3
  * @return true si hay un error
  */
-bool L_AHT21::sendCommand(uint8_t cmd1, uint8_t cmd2, uint8_t cmd3)
-{
-    i2cPort->beginTransmission(AHT21_ADDRESS); // Iniciar transmisión I2C a la dirección del sensor
-    i2cPort->write(cmd1);                      // Enviar comando 1
-    i2cPort->write(cmd2);                      // Enviar comando 2
-    i2cPort->write(cmd3);                      // Enviar comando 3
-    return (i2cPort->endTransmission() == 0);  // Retorna false si hay un error
+bool L_AHT21::sendCommand(uint8_t cmd1, uint8_t cmd2, uint8_t cmd3) {
+    i2cPort->beginTransmission(AHT21_ADDRESS);
+    i2cPort->write(cmd1);
+    i2cPort->write(cmd2);
+    i2cPort->write(cmd3);
+    uint8_t error = i2cPort->endTransmission();
+    
+    // Solo aplicar la regla especial si NO es ESP32 o ESP8266 (es decir, para AVR u otras placas)
+    #if !defined(ARDUINO_ARCH_ESP32) && !defined(ARDUINO_ARCH_ESP8266)
+        if (cmd1 == 0xE1 && (error == 2 || error == 3)) {
+            return true; // Ignorar NACK para inicialización en placas no-ESP
+        }
+    #endif
+    
+    return (error == 0); // Comportamiento estándar para ESP32/ESP8266
 }
 
 /**
