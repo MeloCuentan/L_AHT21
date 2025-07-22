@@ -19,7 +19,7 @@ bool L_AHT21::begin()
     delay(10);                          // Esperar un poco para estabilización
     if (!sendCommand(0xE1, 0x08, 0x00)) // Enviar comando de inicialización
         return false;                   // Retorna false si hay un error
-    delay(10);                          // Dar tiempo para que el sensor se configure
+    delay(50);                          // Dar tiempo para que el sensor se configure
     return true;                        // Retorna false si no hay error
 }
 
@@ -36,15 +36,12 @@ bool L_AHT21::sendCommand(uint8_t cmd1, uint8_t cmd2, uint8_t cmd3) {
     i2cPort->write(cmd2);
     i2cPort->write(cmd3);
     uint8_t error = i2cPort->endTransmission();
-    
-    // Solo aplicar la regla especial si NO es ESP32 o ESP8266 (es decir, para AVR u otras placas)
-    #if !defined(ARDUINO_ARCH_ESP32) && !defined(ARDUINO_ARCH_ESP8266)
-        if (cmd1 == 0xE1 && (error == 2 || error == 3)) {
-            return true; // Ignorar NACK para inicialización en placas no-ESP
-        }
-    #endif
-    
-    return (error == 0); // Comportamiento estándar para ESP32/ESP8266
+
+    if (cmd1 == 0xE1 && (error == 2 || error == 3)) {
+        return true;
+    }
+
+    return (error == 0);
 }
 
 /**
