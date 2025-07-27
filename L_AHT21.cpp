@@ -20,7 +20,7 @@ bool L_AHT21::begin()
     if (!sendCommand(0xE1, 0x08, 0x00)) // Enviar comando de inicialización
         return false;                   // Retorna false si hay un error
     delay(50);                          // Dar tiempo para que el sensor se configure
-    return true;                        // Retorna false si no hay error
+    return true;                        // Retorna true si no hay error
 }
 
 /**
